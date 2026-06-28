@@ -74,11 +74,7 @@ public class VentanaPrincipal extends JFrame {
 
         btnCalcular = new JButton("Calcular Monto Total");
         // Funcionalidad para eliminar gastos seleccionados
-<<<<<<< HEAD
-        btnEliminar = new JButton("Eliminar Registro");
-=======
         btnEliminar = new JButton("Quitar Gasto");
->>>>>>> feature-eliminar-gasto
 
         panelBotones.add(lblTotal);
         panelBotones.add(btnCalcular);
