@@ -23,18 +23,20 @@ public class VentanaPrincipal extends JFrame {
     private GestorGastos gestor;
 
     public VentanaPrincipal() {
+
         gestor = new GestorGastos();
 
         setTitle("Sistema de Control de Gastos Personales");
-        setSize(800, 600);
+        setSize(800,600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         setLayout(new BorderLayout());
 
         JPanel panelFormulario = new JPanel();
+        panelFormulario.setLayout(new GridLayout(5,2));
+
         lblTotal = new JLabel("Total Gastado: S/. 0.0");
-        panelFormulario.setLayout(new GridLayout(5, 2));
 
         panelFormulario.add(new JLabel("Descripción:"));
         txtDescripcion = new JTextField();
@@ -64,8 +66,7 @@ public class VentanaPrincipal extends JFrame {
                 "Fecha"
         };
 
-        modeloTabla = new DefaultTableModel(columnas, 0);
-
+        modeloTabla = new DefaultTableModel(columnas,0);
         tabla = new JTable(modeloTabla);
 
         add(new JScrollPane(tabla), BorderLayout.CENTER);
@@ -73,89 +74,107 @@ public class VentanaPrincipal extends JFrame {
         JPanel panelBotones = new JPanel();
 
         btnCalcular = new JButton("Calcular Monto Total");
-        // Funcionalidad para eliminar gastos seleccionados
         btnEliminar = new JButton("Quitar Gasto");
 
         panelBotones.add(lblTotal);
         panelBotones.add(btnCalcular);
         panelBotones.add(btnEliminar);
 
-        add(panelBotones, BorderLayout.SOUTH);
+        add(panelBotones,BorderLayout.SOUTH);
+
+        // Registrar gasto
         btnRegistrar.addActionListener(e -> {
 
-    try {
+            try {
 
-        String descripcion = txtDescripcion.getText();
-        String categoria = txtCategoria.getText();
-        double monto = Double.parseDouble(txtMonto.getText());
-        String fecha = txtFecha.getText();
+                String descripcion = txtDescripcion.getText();
+                String categoria = txtCategoria.getText();
+                double monto = Double.parseDouble(txtMonto.getText());
+                String fecha = txtFecha.getText();
 
-        Gasto gasto = new Gasto(
-                descripcion,
-                categoria,
-                monto,
-                fecha
-        );
+                Gasto gasto = new Gasto(
+                        descripcion,
+                        categoria,
+                        monto,
+                        fecha
+                );
 
-        gestor.agregarGasto(gasto);
+                gestor.agregarGasto(gasto);
 
-        modeloTabla.addRow(new Object[]{
-                descripcion,
-                categoria,
-                monto,
-                fecha
+                cargarDatos();
+
+                txtDescripcion.setText("");
+                txtCategoria.setText("");
+                txtMonto.setText("");
+                txtFecha.setText("");
+
+            } catch (NumberFormatException ex){
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Ingrese un monto válido"
+                );
+
+            }
+
         });
 
-        txtDescripcion.setText("");
-        txtCategoria.setText("");
-        txtMonto.setText("");
-        txtFecha.setText("");
-
-    } catch (NumberFormatException ex) {
-
-        JOptionPane.showMessageDialog(
-                this,
-                "Ingrese un monto válido"
-        );
-
-    }
-
-});
+        // Calcular total
         btnCalcular.addActionListener(e -> {
 
-        double total = gestor.calcularTotal();
+            lblTotal.setText(
+                    "Total Gastado: S/. " + gestor.calcularTotal()
+            );
 
-        lblTotal.setText(
-            "Total Gastado: S/. " + total
-    );
+        });
 
-});
-btnEliminar.addActionListener(e -> {
+        // Eliminar gasto
+        btnEliminar.addActionListener(e -> {
 
-    int filaSeleccionada = tabla.getSelectedRow();
+            int filaSeleccionada = tabla.getSelectedRow();
 
-    if (filaSeleccionada >= 0) {
+            if(filaSeleccionada >= 0){
 
-        gestor.eliminarGastoSeleccionado(filaSeleccionada);
+                gestor.eliminarGastoSeleccionado(filaSeleccionada);
 
-        modeloTabla.removeRow(filaSeleccionada);
+                cargarDatos();
 
-        double total = gestor.calcularTotal();
+            }else{
 
-        lblTotal.setText(
-                "Total Gastado: S/. " + total
-        );
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Seleccione un gasto para eliminar"
+                );
 
-    } else {
+            }
 
-        JOptionPane.showMessageDialog(
-                this,
-                "Seleccione un gasto para eliminar"
-        );
+        });
 
-    }
+        cargarDatos();
 
-});
         setVisible(true);
+
     }
+
+    private void cargarDatos(){
+
+        modeloTabla.setRowCount(0);
+
+        for(Gasto gasto : gestor.obtenerGastos()){
+
+            modeloTabla.addRow(new Object[]{
+                    gasto.getDescripcion(),
+                    gasto.getCategoria(),
+                    gasto.getMonto(),
+                    gasto.getFecha()
+            });
+
+        }
+
+        lblTotal.setText(
+                "Total Gastado: S/. " + gestor.calcularTotal()
+        );
+
+    }
+
 }
